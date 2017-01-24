@@ -42,6 +42,11 @@
  *        9.1.2017: !!! projevuje se problem s mazanim pameti,
  *        po vycisteni napajecich kontaktu zavada odstranena, posilim napajeni pameti z pinu
  *        kapacitou 1M !!!
+ *        Problem se vyskytuje nadale. Vypada to na nizke napajeci napeti pro pamet
+ *        pri programovani (mazani).
+ *        Nova verze PCB ma pro spinani napajeci vetve (pro flash + teplomer) tranzistor.
+ *
+ *        Nova verze PCB bude zacinat na verzi software 0.3
  *
  */
 
