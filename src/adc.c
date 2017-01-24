@@ -7,10 +7,10 @@
 
 #include "adc.h"
 
-#define TEMP_INPUT_PIN                  (1 << 0)  // in
+#define TEMP_INPUT_PIN                  (1 << 3)  // temperature sensor on PA3
 #define TEMP_INPUT_GPIO_PORT            GPIOA
 
-#define ADC_INPUT_TEMPERATURE           ADC_CHSELR_CHSEL0
+#define ADC_INPUT_TEMPERATURE           ADC_CHSELR_CHSEL3   // PA3
 #define ADC_INPUT_REFINT                ADC_CHSELR_CHSEL17
 #define ADC_INPUT_TEMP_INT              ADC_CHSELR_CHSEL18
 

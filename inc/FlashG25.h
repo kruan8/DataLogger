@@ -47,6 +47,7 @@ void FlashG25_WriteDisable();
 void FlashG25_PageProgram(uint32_t nAddr, uint8_t* pBuffer, uint8_t length);
 void FlashG25_SectorErase(uint32_t nAddr);
 bool FlashG25_IsPresent();
+void FlashG25_SetDeepPower();
 uint32_t FlashG25_GetSectors();
 uint32_t FlashG25_GetPages();
 void FlashG25_Send24bit(uint32_t nValue);

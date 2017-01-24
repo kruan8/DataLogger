@@ -26,15 +26,20 @@
 #define G25_COMID_SECTOR_ERASE      0x20
 #define G25_COMID_DEVICE_ID         0x90
 #define G25_COMID_IDENTIFICATION    0x9F
+#define G25_COMID_DEEP_POWER        0xB9
 
 #define G25_STATUS_WIP              0x01     // write in progress
 #define G25_STATUS_WEL              0x02
 #define G25_STATUS_SRP              0x80
 
+#define GIGADEVICE_ID               0xC8
+#define ADESTO_ID                   0x1F
+
 static const FlashG25Identify_t g_G25types[] = {
     // ID      | pages | sectors
     { 0xC84011,   512,   32 },        // G25D10 1Mbit
     { 0xC84013,  2048,  128 },        // G25Q41 4Mbit
+    { 0x1F8401,  2048,  128 },        // AT25SF041 4Mbit
 };
 
 uint32_t g_nPages = 0;        // memory page count
@@ -176,8 +181,16 @@ uint32_t FlashG25_GetID()
 
 bool FlashG25_IsPresent()
 {
-  return ((FlashG25_GetID() >> 8) == 0xC840) ? true : false;
+  uint32_t nID = FlashG25_GetID() >> 16;
+  return (nID == GIGADEVICE_ID || nID == ADESTO_ID) ? true : false;
 }
+
+void FlashG25_SetDeepPower()
+{
+  CS_ENABLE;
+  SPI1Write(G25_COMID_DEEP_POWER);
+  CS_DISABLE;
+  }
 
 uint32_t FlashG25_GetSectors()
 {

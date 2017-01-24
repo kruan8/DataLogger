@@ -19,8 +19,9 @@
 #define SUPPLY_PIN              (1 << 2)
 #define SUPPLY_GPIO_PORT        GPIOA
 
-#define SUPPLY_ENABLE           (SUPPLY_GPIO_PORT->BSRR = SUPPLY_PIN)
-#define SUPPLY_DISABLE          (SUPPLY_GPIO_PORT->BRR = SUPPLY_PIN)
+// tranzistor BSS84 se spina urovni L
+#define SUPPLY_ENABLE           (SUPPLY_GPIO_PORT->BRR = SUPPLY_PIN)
+#define SUPPLY_DISABLE          (SUPPLY_GPIO_PORT->BSRR = SUPPLY_PIN)
 
 #define RECORD_SIZE             (sizeof(app_record_t))   // 5
 #define RECORDS_PER_SECTOR      (4096 / RECORD_SIZE)
@@ -134,6 +135,7 @@ void APP_Measure(void)
     }
   }
 
+//  FlashG25_SetDeepPower();
   APP_SupplyOff();
 }
 
@@ -238,6 +240,12 @@ void APP_SupplyOnAndWait()
 
   // vratit do AF (SPI1)
   GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE7)) | GPIO_MODER_MODE7_1;
+  GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE5)) | GPIO_MODER_MODE5_1;
+  GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE6)) | GPIO_MODER_MODE6_1;
+
+  // nastavit CS pro AT25
+  GPIOA->MODER = (GPIOA->MODER & ~(GPIO_MODER_MODE4)) | GPIO_MODER_MODE4_0;
+
   SUPPLY_ENABLE;
 
 //  SetMSI(msi_65kHz);
@@ -256,8 +264,13 @@ void APP_SupplyOff()
 
   GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE2)) | GPIO_MODER_MODE2_0 | GPIO_MODER_MODE2_1; // analog mode
 
-  // tekl zde proud z PA7 (SPI MOSI), ktery se pres G25D10 objevil na PA2, na kterem vzniklo napeti 2,8V
+  // tekl zde proud z PA7 (SPI MOSI), ktery se pres FLASH pamet objevil na napajeci vetvi, na ktere vzniklo napeti 2,8V
   GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE7)) | GPIO_MODER_MODE7_0 | GPIO_MODER_MODE7_1; // analog mode
+  GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE5)) | GPIO_MODER_MODE5_0 | GPIO_MODER_MODE5_1; // analog mode
+  GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE6)) | GPIO_MODER_MODE6_0 | GPIO_MODER_MODE6_1; // analog mode
+
+  // analog mode for CS pin
+  GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE4)) | GPIO_MODER_MODE4_0 | GPIO_MODER_MODE4_1;
 }
 
 void APP_StopMode(void)

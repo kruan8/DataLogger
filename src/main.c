@@ -46,7 +46,7 @@
  *        pri programovani (mazani).
  *        Nova verze PCB ma pro spinani napajeci vetve (pro flash + teplomer) tranzistor.
  *
- *        Nova verze PCB bude zacinat na verzi software 0.3
+ * v0.3   Nova verze PCB s tranzistorem BSS84
  *
  */
 
