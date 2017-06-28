@@ -51,8 +51,6 @@
  */
 
 
-void Tests(void);
-
 int main(void)
 {
   SystemCoreClockUpdate();
@@ -61,7 +59,7 @@ int main(void)
 
   APP_Init();
 
-  // Tests();
+  // RTC_Test();
 
   while (RTC_GetUsartTimer())
   {
@@ -83,19 +81,4 @@ int main(void)
   }
 }
 
-void Tests(void)
-{
-  // ---------- Test RTC ---------------
-  rtc_record_time_t dt;
 
-  dt.day = 15;
-  dt.month = 11;
-  dt.year = 16;
-  dt.hour = 18;
-  dt.min = 25;
-  dt.sec = 0;
-  RTC_Set(&dt, true, true);
-  RTC_Get(&dt);
-  uint32_t t = RTC_GetUnixTimeStamp(&dt);
-  RTC_GetDateTimeFromUnix(&dt, t);
-}

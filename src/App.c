@@ -118,12 +118,12 @@ void APP_Measure(void)
 
   // save do Flash
   // Todo: opravdu je treba sektor mazat, kdyz je vymazana cela pamet?
-  if (g_nSectorPosition == 0)  // zacatek noveho sektoru, tak ho smazat
-  {
-    FlashG25_SectorErase(g_nSector);
-  }
+//  if (g_nSectorPosition == 0)  // zacatek noveho sektoru, tak ho smazat
+//  {
+//    FlashG25_SectorErase(g_nSector);
+//  }
 
-  FlashG25_PageProgram(g_nSector + g_nSectorPosition, (uint8_t*)&record, sizeof(app_record_t));
+  FlashG25_PageProgram(g_nSector * G25_SECTOR_SIZE + g_nSectorPosition, (uint8_t*)&record, sizeof(app_record_t));
   g_nSectorPosition += RECORD_SIZE;
   if (g_nSectorPosition >= FULL_SECTOR)
   {

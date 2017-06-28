@@ -286,3 +286,20 @@ void SysTick_Handler(void)
     g_nUsartTimer--;
   }
 }
+
+void RTC_Test(void)
+{
+  // ---------- Test RTC ---------------
+  rtc_record_time_t dt;
+
+  dt.day = 15;
+  dt.month = 11;
+  dt.year = 16;
+  dt.hour = 18;
+  dt.min = 25;
+  dt.sec = 0;
+  RTC_Set(&dt, true, true);
+  RTC_Get(&dt);
+  uint32_t t = RTC_GetUnixTimeStamp(&dt);
+  RTC_GetDateTimeFromUnix(&dt, t);
+}
