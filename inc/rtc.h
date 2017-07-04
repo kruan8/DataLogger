@@ -60,4 +60,6 @@ void RTC_GetDateTimeFromUnix(rtc_record_time_t* data, uint32_t unix);
 uint8_t RTC_ByteToBcd2(uint8_t Value);
 uint8_t RTC_Bcd2ToByte(uint8_t Value);
 
+void RTC_Test(void);
+
 #endif /* RTC_H_ */
