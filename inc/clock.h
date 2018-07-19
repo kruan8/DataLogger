@@ -21,7 +21,15 @@ typedef enum
   msi_4Mhz = RCC_ICSCR_MSIRANGE_6,    // 620
 }msi_cloks_e;
 
+typedef enum
+{
+  range1 = 1,
+  range2 = 2,
+  range3 = 3,
+}range_e;
+
 void SetHSI16(void);
 void SetMSI(msi_cloks_e eMsiRange);
+void SetVoltageRange(range_e eRange);
 
 #endif /* CLOCK_H_ */

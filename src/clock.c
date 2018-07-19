@@ -27,3 +27,22 @@ void SetMSI(msi_cloks_e eMsiRange)
   RCC->ICSCR = (RCC->ICSCR & (~RCC_ICSCR_MSIRANGE)) | (uint32_t) eMsiRange;
   RCC->CR &= (~RCC_CR_HSION);   // HSI oscilator OFF
 }
+
+/*  Performance versus VCORE ranges
+* CPU performance | Power performance | VCORE range | Typical Value (V) | Max frequency (MHz) | VDD range
+*                 |                   |             |                   |   1 WS   |   0 WS   |
+*       High      |        Low        |      1      |         1.8       |    32    |    16    | 1.71 - 3.6
+*      Medium     |      Medium       |      2      |         1.5       |    16    |     8    | 1.65 - 3.6
+*       Low       |       High        |      3      |         1.2       |    4,2   |    4,2   | 1.65 - 3.6
+*/
+
+void SetVoltageRange(range_e eRange)
+{
+  // prepnuti CORE na Range3 (nelze flashovat)
+  RCC->APB1ENR |= RCC_APB1ENR_PWREN; // Enable PWR clock
+  while (PWR->CSR & PWR_CSR_VOSF);  // wait for regulatro is ready
+  PWR->CR &= ~PWR_CR_VOS;           // reset VOS bits
+  PWR->CR |= eRange << 11;          // set voltage range
+  while (PWR->CSR & PWR_CSR_VOSF);  // wait for regulatro is ready
+  RCC->APB1ENR &= ~RCC_APB1ENR_PWREN; // Disable PWR clock
+}

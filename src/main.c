@@ -28,6 +28,8 @@
  * Merici cyklus trva v DEBUG konfiguraci (s vystupem výpisu na seriový port) cca 35 ms,
  * bez vypisu asi 6ms.
  *
+ * Pouzita baterie CR2032 ma podle datasheetu povoleny odber 200 uA.
+ *
  *
  * v0.1 - prvni verze
  * v0.2 - kalibrace nyni funguje jako ofset, ktery se uklada do EEPROM (CALxxx),
@@ -53,10 +55,6 @@
 
 int main(void)
 {
-  SystemCoreClockUpdate();
-
-  SysTick_Config(2097);
-
   APP_Init();
 
   // RTC_Test();

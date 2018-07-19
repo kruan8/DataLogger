@@ -45,12 +45,11 @@ static app_error_t g_eError = err_ok;
 
 void APP_Init(void)
 {
-  // prepnuti CORE na Range3 (nelze flashovat)
-  RCC->APB1ENR |= RCC_APB1ENR_PWREN; // Enable PWR clock
-  while (PWR->CSR & PWR_CSR_VOSF);
-  PWR->CR |= PWR_CR_VOS_0 | PWR_CR_VOS_1;
-  while (PWR->CSR & PWR_CSR_VOSF);
-  RCC->APB1ENR &= ~RCC_APB1ENR_PWREN;
+  // Set clock & power
+  SetMSI(msi_1Mhz);
+  SystemCoreClockUpdate();
+  SysTick_Config(SystemCoreClock);
+  SetVoltageRange(range3);
 
   Adc_Init();
   RTC_Init();
