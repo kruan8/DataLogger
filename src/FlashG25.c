@@ -35,6 +35,8 @@
 #define GIGADEVICE_ID               0xC8
 #define ADESTO_ID                   0x1F
 
+// poznamka
+
 static const FlashG25Identify_t g_G25types[] = {
     // ID      | pages | sectors
     { 0xC84011,   512,   32 },        // G25D10 1Mbit
