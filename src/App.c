@@ -78,7 +78,7 @@ void APP_Init(void)
   }
   else
   {
-	  APP_LogError(err_flash_error);
+	  APP_LogError(err_init_flash_error);
   }
 
   USART_PrintHeader(APP_GetRecords(), nFreeRecords, Adc_MeasureRefInt(), g_eError);

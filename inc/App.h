@@ -20,7 +20,7 @@ typedef enum
 {
   err_ok,
   err_full_memory,
-  err_flash_error,
+  err_init_flash_error,
   err_write_flash_error,
 } app_error_t;
 

@@ -8,8 +8,8 @@
 #include "usart.h"
 #include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include "rtc.h"
 #include "FlashG25.h"
 #include "adc.h"
@@ -141,14 +141,17 @@ void USART_PrintHeader(uint32_t nRecords, uint32_t nFreeRecords, uint32_t nBatVo
 
   switch (eErr)
   {
-  case err_flash_error:
-    USART_PrintLine((uint8_t*)"FLASH memory ERROR!");
+  case err_init_flash_error:
+    USART_PrintLine((uint8_t*)"Init memory ERROR!");
     break;
   case err_full_memory:
     USART_PrintLine((uint8_t*)"FULL MEMORY!");
     break;
-  case err_ok:
+  case err_write_flash_error:
+    USART_PrintLine((uint8_t*)"Memory write ERRROR!");
     break;
+  case err_ok:
+      break;
   }
 }
 
