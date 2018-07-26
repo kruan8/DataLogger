@@ -14,12 +14,14 @@
 #define EEPROM_TEMP_OFFSET    0                                      // int32
 #define EEPROM_TEMP_ADC      (EEPROM_TEMP_OFFSET + sizeof(int32_t))      // uint32
 #define EEPROM_INTERVAL_S    (EEPROM_TEMP_ADC + sizeof(int32_t))    // uint32
+#define EEPROM_ERROR         (EEPROM_INTERVAL_S + sizeof(int32_t))    // uint32
 
 typedef enum
 {
   err_ok,
   err_full_memory,
   err_flash_error,
+  err_write_flash_error,
 } app_error_t;
 
 typedef struct
@@ -39,5 +41,6 @@ void APP_StopMode(void);
 void APP_SaveTempOffset(int16_t nOffset);
 void APP_SaveInterval(uint32_t nInterval);
 uint32_t APP_GetInterval_s(void);
+void APP_LogError(app_error_t e_error);
 
 #endif /* APP_H_ */

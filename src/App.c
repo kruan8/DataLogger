@@ -64,6 +64,9 @@ void APP_Init(void)
     g_nWakeUpInterval_s = nInterval;
   }
 
+  g_eError = Eeprom_ReadUint32(EEPROM_ERROR);
+
+
   APP_SupplyOnAndWait();  // set SUPPLY pin for output
 
   USART_Init();
@@ -75,7 +78,7 @@ void APP_Init(void)
   }
   else
   {
-    g_eError = err_flash_error;
+	  APP_LogError(err_flash_error);
   }
 
   USART_PrintHeader(APP_GetRecords(), nFreeRecords, Adc_MeasureRefInt(), g_eError);
@@ -122,7 +125,15 @@ void APP_Measure(void)
 //    FlashG25_SectorErase(g_nSector);
 //  }
 
-  FlashG25_PageProgram(g_nSector * G25_SECTOR_SIZE + g_nSectorPosition, (uint8_t*)&record, sizeof(app_record_t));
+  FlashG25_PageProgram(g_nSector * G25_SECTOR_SIZE + g_nSectorPosition, (uint8_t*)&record, RECORD_SIZE);
+
+  app_record_t record_check;
+  FlashG25_ReadData(g_nSector * G25_SECTOR_SIZE + g_nSectorPosition, (uint8_t*)&record_check, RECORD_SIZE);
+  if (memcmp (&record, &record_check, RECORD_SIZE) != 0)
+  {
+	  APP_LogError(err_write_flash_error);
+  }
+
   g_nSectorPosition += RECORD_SIZE;
   if (g_nSectorPosition >= FULL_SECTOR)
   {
@@ -130,7 +141,7 @@ void APP_Measure(void)
     g_nSector++;
     if (g_nSector >= FlashG25_GetSectors())
     {
-      g_eError = err_full_memory;
+    	APP_LogError(err_full_memory);
     }
   }
 
@@ -162,7 +173,7 @@ uint32_t APP_FindFlashPosition()
 
   if (bFullMemory)
   {
-    g_eError = err_full_memory;
+	  APP_LogError(err_full_memory);
     return 0;
   }
 
@@ -314,4 +325,14 @@ void APP_SaveInterval(uint32_t nInterval)
 uint32_t APP_GetInterval_s(void)
 {
   return g_nWakeUpInterval_s;
+}
+
+void APP_LogError(app_error_t e_error)
+{
+	g_eError = err_full_memory;
+
+	// ulozit chybu do EEPROM
+  Eeprom_UnlockPELOCK();
+  Eeprom_WriteUint32(EEPROM_ERROR, e_error);
+  Eeprom_LockNVM();
 }

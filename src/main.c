@@ -50,6 +50,8 @@
  *
  * v0.3   Nova verze PCB s tranzistorem BSS84
  *
+ * v0.4   Frekvence MCU snizena na 1MHz, doplneno logovani chyby
+ *
  */
 
 
