@@ -175,7 +175,7 @@ void USART_PrintStatus()
   uint32_t nDays = g_nFreeRecords / (86400 / APP_GetInterval_s());
   snprintf((char*)text, sizeof (text), "Free memory:%lu records (%lu days)", g_nFreeRecords, nDays);
   USART_PrintLine(text);
-  USART_Print((uint8_t*)"Temperature offset: ");
+  USART_Print((uint8_t*)"Temperature calibration offset: ");
   USART_PrintTemperature(Adc_GetTempOffset());
   USART_PrintLine((uint8_t*)"(C)");
 }
@@ -189,6 +189,7 @@ void USART_PrintHelp()
   USART_PrintLine((uint8_t*)"Set interval: 'I mm' (30)");
   USART_PrintLine((uint8_t*)"Temperature list: 'L'");
   USART_PrintLine((uint8_t*)"Erase memory: 'X+X'");
+  USART_PrintLine((uint8_t*)"Temperature calibration: 'CALxxx' (CAL225=22,5)");
   USART_PrintLine((uint8_t*)"Print help: ENTER");
 }
 

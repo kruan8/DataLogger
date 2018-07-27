@@ -98,14 +98,14 @@ void APP_Measure(void)
   int16_t temp = Adc_GetTemperature(true);
 
 #ifdef DEBUG
-  int16_t tempInt = Adc_MeasureTemperatureInternal(Adc_MeasureRefInt());
+  // int16_t tempInt = Adc_MeasureTemperatureInternal(Adc_MeasureRefInt());
 
   uint8_t text[35];
   snprintf((char*)text, sizeof(text), "VDDA:%d(mV)  TEMP:", Adc_MeasureRefInt());
   USART_Print(text);
   USART_PrintTemperature(temp);
-  USART_Print((uint8_t*) " / ");
-  USART_PrintTemperature(tempInt);
+//  USART_Print((uint8_t*) " / ");
+//  USART_PrintTemperature(tempInt);
   USART_PrintNewLine();
   USART_WaitForTC();
 #endif
@@ -239,6 +239,8 @@ void APP_PrintRecords()
       USART_PrintNewLine();
     }
   }
+
+  RTC_SetUsartTimer(60000);       // timeout for COM session
 }
 
 void APP_SupplyOnAndWait()

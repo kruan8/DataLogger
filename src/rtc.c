@@ -30,8 +30,8 @@ const uint8_t TM_RTC_Months[2][12] = {
   {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}  /* Leap year */
 };
 
-static volatile uint32_t g_nTicks = 0;
-static volatile uint32_t g_nUsartTimer;
+static volatile uint32_t g_nTicks = 0;   // odmerevani 1ms tiku
+static volatile uint32_t g_nUsartTimer;  // casovac pro ukonceni COM relace a prechod do mereni
 
 void RTC_Init(void)
 {

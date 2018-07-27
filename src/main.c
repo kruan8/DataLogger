@@ -50,7 +50,11 @@
  *
  * v0.3   Nova verze PCB s tranzistorem BSS84
  *
- * v0.4   Frekvence MCU snizena na 1MHz, doplneno logovani chyby
+ * v0.4   Napajeni zmeneno na 2x AAA baterii
+ *        Frekvence MCU snizena na 1MHz, doplneno logovani chyby
+ *        nastaveni casovace komunikace po provedeni LIST
+ *        do helpu pridan popis CAL prikazu
+ *        odstranen vypis internal teplomeru
  *
  */
 
