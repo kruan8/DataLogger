@@ -48,7 +48,8 @@ void USART_Init(void)
   /* (1) oversampling by 16, 9600 baud */
   /* (2) 8 data bit, 1 start bit, 1 stop bit, no parity */
   //  USART2->BRR = 160000 / 96; /* (1) */
-  USART2->BRR = 218;
+  // Todo: upravit dynamicky podle taktu MSI
+  USART2->BRR = 109;  // 218 pro MSI=2Mhz;
   USART2->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE; /* (2) */
 
   /* polling idle frame Transmission */

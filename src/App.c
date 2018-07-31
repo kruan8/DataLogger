@@ -48,7 +48,7 @@ void APP_Init(void)
   // Set clock & power
   SetMSI(msi_1Mhz);
   SystemCoreClockUpdate();
-  SysTick_Config(SystemCoreClock);
+  SysTick_Config(SystemCoreClock / 1000);
   SetVoltageRange(range3);
 
   Adc_Init();
