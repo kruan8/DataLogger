@@ -55,6 +55,7 @@
  *        nastaveni casovace komunikace po provedeni LIST
  *        do helpu pridan popis CAL prikazu
  *        odstranen vypis internal teplomeru
+ *        pri inicializaci kontrola velikosti napìtí baterie
  *
  */
 

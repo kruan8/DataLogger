@@ -143,6 +143,9 @@ void USART_PrintHeader(uint32_t nRecords, uint32_t nFreeRecords, uint32_t nBatVo
 
   switch (eErr)
   {
+  case err_supply:
+    USART_PrintLine((uint8_t*)"Supply voltage is LOW!");
+    break;
   case err_init_flash_error:
     USART_PrintLine((uint8_t*)"Init memory ERROR!");
     break;
@@ -164,8 +167,8 @@ void USART_PrintStatus()
   snprintf((char*)text, sizeof (text), "Date&time: ");
   USART_Print(text);
   USART_PrintDateTime();
-  uint16_t nVDDA = Adc_MeasureRefInt();
-  snprintf((char*)text, sizeof (text), "Battery:%d,%.2d(V)", nVDDA / 1000, (nVDDA / 10) % 100);
+  uint16_t nVDDA = Adc_MeasureRefInt_mV();
+  snprintf((char*)text, sizeof (text), "Battery:%d,%.2d(V) '(>2,6V)'", nVDDA / 1000, (nVDDA / 10) % 100);
   USART_PrintLine(text);
   int16_t temp = Adc_CalcTemperature(Adc_CalcValueFromVDDA(Adc_MeasureTemperature(), nVDDA), true);
   USART_Print((uint8_t*)"Temperature:");
@@ -188,7 +191,7 @@ void USART_PrintHelp()
   USART_PrintLine((uint8_t*)"Print status: 'S'");
   USART_PrintLine((uint8_t*)"Set date: 'D dd.mm.yy' (25.3.16)");
   USART_PrintLine((uint8_t*)"Set time: 'T hh:mm' (14:10)");
-  USART_PrintLine((uint8_t*)"Set interval: 'I mm' (30)");
+  USART_PrintLine((uint8_t*)"Set interval (min): 'I mm' (30)");
   USART_PrintLine((uint8_t*)"Temperature list: 'L'");
   USART_PrintLine((uint8_t*)"Erase memory: 'X+X'");
   USART_PrintLine((uint8_t*)"Temperature calibration: 'CALxxx' (CAL225=22,5)");
@@ -221,10 +224,16 @@ void USART_EraseMemory()
 //      while ((RTC_GetTicks() - start) < 100);
     }
 
+    APP_LogError(err_ok);
+
     USART_PrintNewLine();
-    USART_PrintLine((uint8_t*)"Memory is erased");
-    g_nFreeRecords = APP_FindFlashPosition();
-    g_nRecords = APP_GetRecords();
+    USART_PrintLine((uint8_t*)"Memory & error are erased, reset performed");
+
+    // Todo: vymazana chyba, pro novou kontrolu chyb by asi bylo vhodne provest reset
+    USART_WaitForTC();
+    NVIC_SystemReset();
+//    g_nFreeRecords = APP_FindFlashPosition();
+//    g_nRecords = APP_GetRecords();
   }
 }
 

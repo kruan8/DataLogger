@@ -149,7 +149,7 @@ int16_t Adc_CalcTemperature(uint16_t nValue, bool bOffsetEnable)
 int16_t Adc_GetTemperature(bool bOffsetEnable)
 {
   // zmerit napajeci napeti VDDA
-  uint16_t nVDDA = Adc_MeasureRefInt();
+  uint16_t nVDDA = Adc_MeasureRefInt_mV();
 
   // zmerit teplotu
   uint16_t tempADC = Adc_CalcValueFromVDDA(Adc_MeasureTemperature(), nVDDA);
@@ -166,7 +166,7 @@ int16_t Adc_GetTempOffset()
   return g_nTempOffset;
 }
 
-uint16_t Adc_MeasureRefInt(void)
+uint16_t Adc_MeasureRefInt_mV(void)
 {
   ADC1->CHSELR = ADC_INPUT_REFINT;       // channel
 

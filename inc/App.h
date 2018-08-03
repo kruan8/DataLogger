@@ -19,6 +19,7 @@
 typedef enum
 {
   err_ok,
+  err_supply,
   err_full_memory,
   err_init_flash_error,
   err_write_flash_error,

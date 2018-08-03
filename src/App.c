@@ -33,6 +33,9 @@
 #define WAKEUP_INTERVAL_S    (30 * 60)  // 30 minut
 #endif
 
+#define MIN_SUPPLY_VOLTAGE_MV   2600  //2,6V
+
+
 static uint16_t g_nWakeUpInterval_s = WAKEUP_INTERVAL_S;
 
 //static const uint8_t EmptyRecord[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
@@ -53,6 +56,7 @@ void APP_Init(void)
 
   Adc_Init();
   RTC_Init();
+  USART_Init();
 
   // nacteme konstanty z EEPROM
   Adc_SetTempOffset(Eeprom_ReadUint32(EEPROM_TEMP_OFFSET));
@@ -66,10 +70,14 @@ void APP_Init(void)
 
   g_eError = Eeprom_ReadUint32(EEPROM_ERROR);
 
+  // kontrola velikosti napajeciho napeti
+  uint16_t nVoltage = Adc_MeasureRefInt_mV();
+  if (nVoltage < MIN_SUPPLY_VOLTAGE_MV)
+  {
+    APP_LogError(err_supply);
+  }
 
   APP_SupplyOnAndWait();  // set SUPPLY pin for output
-
-  USART_Init();
 
   uint32_t nFreeRecords = 0;
   if (FlashG25_Init())
@@ -81,7 +89,7 @@ void APP_Init(void)
 	  APP_LogError(err_init_flash_error);
   }
 
-  USART_PrintHeader(APP_GetRecords(), nFreeRecords, Adc_MeasureRefInt(), g_eError);
+  USART_PrintHeader(APP_GetRecords(), nFreeRecords, nVoltage, g_eError);
   USART_Putc('>');
   RTC_SetUsartTimer(15000);     // waiting for usart input
 }
@@ -98,10 +106,10 @@ void APP_Measure(void)
   int16_t temp = Adc_GetTemperature(true);
 
 #ifdef DEBUG
-  // int16_t tempInt = Adc_MeasureTemperatureInternal(Adc_MeasureRefInt());
+  // int16_t tempInt = Adc_MeasureTemperatureInternal(Adc_MeasureRefInt_mV());
 
   uint8_t text[35];
-  snprintf((char*)text, sizeof(text), "VDDA:%d(mV)  TEMP:", Adc_MeasureRefInt());
+  snprintf((char*)text, sizeof(text), "VDDA:%d(mV)  TEMP:", Adc_MeasureRefInt_mV());
   USART_Print(text);
   USART_PrintTemperature(temp);
 //  USART_Print((uint8_t*) " / ");
