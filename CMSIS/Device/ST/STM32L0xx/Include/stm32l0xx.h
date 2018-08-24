@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32l0xx.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    06-February-2015
   * @brief   CMSIS Cortex-M0+ Device Peripheral Access Layer Header File. 
   *          This file contains all the peripheral register's definitions, bits 
   *          definitions and memory mapping for STM32L0xx devices.            
@@ -12,15 +10,15 @@
   *          is using in the C source code, usually in main.c. This file contains:
   *           - Configuration section that allows to select:
   *              - The device used in the target application
-  *              - To use or not the peripheral’s drivers in application code(i.e. 
-  *                code will be based on direct access to peripheral’s registers 
+  *              - To use or not the peripheral's drivers in application code(i.e. 
+  *                code will be based on direct access to peripheral's registers 
   *                rather than drivers API), this option is controlled by 
   *                "#define USE_HAL_DRIVER"
   *  
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -77,8 +75,16 @@
    application 
   */
 
-#if !defined (STM32L051xx) && !defined (STM32L052xx) && !defined (STM32L053xx) && !defined (STM32L061xx) && !defined (STM32L062xx) && !defined (STM32L063xx) \
- && !defined (STM32L071xx) && !defined (STM32L072xx) && !defined (STM32L073xx) && !defined (STM32L081xx) && !defined (STM32L082xx) && !defined (STM32L083xx)
+#if !defined (STM32L011xx) && !defined (STM32L021xx) && \
+    !defined (STM32L031xx) && !defined (STM32L041xx) && \
+    !defined (STM32L051xx) && !defined (STM32L052xx) && !defined (STM32L053xx) && \
+    !defined (STM32L061xx) && !defined (STM32L062xx) && !defined (STM32L063xx) && \
+    !defined (STM32L071xx) && !defined (STM32L072xx) && !defined (STM32L073xx) && \
+    !defined (STM32L081xx) && !defined (STM32L082xx) && !defined (STM32L083xx) \
+  /* #define STM32L011xx */
+  /* #define STM32L021xx */
+  /* #define STM32L031xx */   /*!< STM32L031C6, STM32L031E6, STM32L031F6, STM32L031G6, STM32L031K6 Devices */
+  /* #define STM32L041xx */   /*!< STM32L041C6, STM32L041E6, STM32L041F6, STM32L041G6, STM32L041K6 Devices */
   /* #define STM32L051xx */   /*!< STM32L051K8, STM32L051C6, STM32L051C8, STM32L051R6, STM32L051R8 Devices */
   /* #define STM32L052xx */   /*!< STM32L052K6, STM32L052K8, STM32L052C6, STM32L052C8, STM32L052R6, STM32L052R8 Devices */
   /* #define STM32L053xx */   /*!< STM32L053C6, STM32L053C8, STM32L053R6, STM32L053R8 Devices */
@@ -106,16 +112,16 @@
 #endif /* USE_HAL_DRIVER */
 
 /**
-  * @brief CMSIS Device version number V1.2.0RC1
+  * @brief CMSIS Device version number V1.7.1
   */
-#define __STM32L0xx_CMSIS_DEVICE_VERSION_MAIN   (0x01) /*!< [31:24] main version */                                  
-#define __STM32L0xx_CMSIS_DEVICE_VERSION_SUB1   (0x02) /*!< [23:16] sub1 version */
-#define __STM32L0xx_CMSIS_DEVICE_VERSION_SUB2   (0x00) /*!< [15:8]  sub2 version */
-#define __STM32L0xx_CMSIS_DEVICE_VERSION_RC     (0x00) /*!< [7:0]  release candidate */ 
-#define __STM32L0xx_CMSIS_DEVICE_VERSION        ((__CMSIS_DEVICE_VERSION_MAIN     << 24)\
-                                      |(__CMSIS_DEVICE_HAL_VERSION_SUB1 << 16)\
-                                      |(__CMSIS_DEVICE_HAL_VERSION_SUB2 << 8 )\
-                                      |(__CMSIS_DEVICE_HAL_VERSION_RC))
+#define __STM32L0xx_CMSIS_VERSION_MAIN   (0x01) /*!< [31:24] main version */
+#define __STM32L0xx_CMSIS_VERSION_SUB1   (0x07) /*!< [23:16] sub1 version */
+#define __STM32L0xx_CMSIS_VERSION_SUB2   (0x02) /*!< [15:8]  sub2 version */
+#define __STM32L0xx_CMSIS_VERSION_RC     (0x00) /*!< [7:0]  release candidate */
+#define __STM32L0xx_CMSIS_VERSION        ((__STM32L0xx_CMSIS_VERSION_MAIN     << 24)\
+                                         |(__STM32L0xx_CMSIS_VERSION_SUB1 << 16)\
+                                         |(__STM32L0xx_CMSIS_VERSION_SUB2 << 8 )\
+                                         |(__STM32L0xx_CMSIS_VERSION_RC))
                                              
 /**
   * @}
@@ -124,8 +130,11 @@
 /** @addtogroup Device_Included
   * @{
   */
-
-#if defined(STM32L031xx)
+#if defined(STM32L011xx)
+  #include "stm32l011xx.h"
+#elif defined(STM32L021xx)
+  #include "stm32l021xx.h"
+#elif defined(STM32L031xx)
   #include "stm32l031xx.h"
 #elif defined(STM32L041xx)
   #include "stm32l041xx.h"
@@ -204,7 +213,6 @@ typedef enum
 #define READ_REG(REG)         ((REG))
 
 #define MODIFY_REG(REG, CLEARMASK, SETMASK)  WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
-
 
 /**
   * @}

@@ -2,13 +2,11 @@
   ******************************************************************************
   * @file    system_stm32l0xx.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    06-February-2015
   * @brief   CMSIS Cortex-M0+ Device Peripheral Access Layer System Header File.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -74,6 +72,12 @@
                variable is updated automatically.
   */
 extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
+/*
+*/
+extern __IO const uint8_t AHBPrescTable[16];   /*!< AHB prescalers table values */
+extern const uint8_t APBPrescTable[8];    /*!< APB prescalers table values */
+extern __IO const uint8_t PLLMulTable[9];      /*!< PLL multipiers table values */
+
 
 /**
   * @}

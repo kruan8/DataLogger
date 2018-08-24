@@ -15,6 +15,8 @@
 #include "rtc.h"
 #include "App.h"
 
+#include "stm32l0xx_ll_gpio.h"
+
 /*
  * MCU bezi z MSI oscilatoru a pri freq 2,1 Mhz ma spotrebu cca 440 uA.
  * Po zmene rozsahu napajeni na Range3 (PWR->CR) se spotreba snizila na 362 uA.
@@ -68,6 +70,7 @@
 
 int main(void)
 {
+
   APP_Init();
 
   // RTC_Test();
