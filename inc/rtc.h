@@ -46,6 +46,7 @@ void RTC_Init(void);
 void RTC_Set(rtc_record_time_t *dt, bool bDate, bool bTime);
 void RTC_Get(rtc_record_time_t *dt);
 void RTC_SetWakeUp(uint16_t nInterval);
+void RTC_WriteAccess(bool bEnable);
 void RTC_PrintDT(uint8_t *pBuffer, uint8_t length);
 
 void RTC_GetDT(rtc_time_t* time, rtc_date_t* date);

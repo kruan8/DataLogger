@@ -28,8 +28,6 @@
  * Merici cyklus trva v DEBUG konfiguraci (s vystupem výpisu na seriový port) cca 35 ms,
  * bez vypisu asi 6ms.
  *
- * Pouzita baterie CR2032 ma podle datasheetu povoleny odber 200 uA.
- *
  *
  * v0.1 - prvni verze
  * v0.2 - kalibrace nyni funguje jako ofset, ktery se uklada do EEPROM (CALxxx),
@@ -48,14 +46,22 @@
  *        pri programovani (mazani).
  *        Nova verze PCB ma pro spinani napajeci vetve (pro flash + teplomer) tranzistor.
  *
- * v0.3   Nova verze PCB s tranzistorem BSS84
+ * v0.3 - Nova verze PCB s tranzistorem BSS84
  *
- * v0.4   Napajeni zmeneno na 2x AAA baterii
- *        Frekvence MCU snizena na 1MHz, doplneno logovani chyby
- *        nastaveni casovace komunikace po provedeni LIST
- *        do helpu pridan popis CAL prikazu
- *        odstranen vypis internal teplomeru
- *        pri inicializaci kontrola velikosti napìtí baterie
+ * v0.4 - Po prostudovani datashetu CR2032 je jasne, za tato baterie nema sanci pokryt spotrebu flash pameti.
+ *        CR2032 ma podle datasheetu povoleny odber 200 uA, flash memory vyzaduje 10mA.
+ *        Napajeni zmeneno na 2x AAA baterii.
+ *        Frekvence MCU snizena na 1MHz, doplneno logovani chyby.
+ *        Nastaveni casovace komunikace po provedeni LIST.
+ *        Do helpu pridan popis CAL prikazu.
+ *        Odstranen vypis internal teplomeru.
+ *        Pri inicializaci kontrola velikosti napìtí baterie.
+ *
+ * Todo: 0.5 - Namalovat si graf, co se ted deje po probuzeni! Stanby se probouzi resetem a je smazana RAM!
+ *        Pro implemetnaci watchdogu se musi WD nastavit na nejdelsi dobu (32s), WD bude provadet reset.
+ *        Vypnout preruseni RTC wakeup a po resetu provedenem pomoci WD, se zkontroluje, jestli je nastaven RTC_ISR->WUTF,
+ *        coz signalizuje, ze vyprsel interval pro mereni. Pro mereni neni potreba inicializovat USART a asi ani RTC!
+ *
  *
  */
 

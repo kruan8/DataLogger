@@ -47,38 +47,36 @@ void RTC_Init(void)
   RCC->APB1ENR &=~ RCC_APB1ENR_PWREN; // Disable PWR clock
 
   // Write access for RTC registers
-  RTC->WPR = 0xCA;
-  RTC->WPR = 0x53;
+  RTC_WriteAccess(true);
   RTC->ISR = RTC_ISR_INIT; // Enable init phase
   while((RTC->ISR & RTC_ISR_INITF)!=RTC_ISR_INITF) // Wait until it is allow to modify RTC register values
   {
     /* add time out here for a robust application */
   }
 
-  RTC->PRER = 0x007F00FF;               // set prescaler, 32768/128 => 256 Hz, 256Hz/256 => 1Hz
+  RTC->PRER = 0x007F00FF;     // set prescaler, 32768/128 => 256 Hz/256 => 1Hz
   RTC->CR &=~ RTC_CR_WUTE;
 
   RTC->ISR =~ RTC_ISR_INIT; // Disable init phase
 
   // Disable write access for RTC registers
-  RTC->WPR = 0xFE;
-  RTC->WPR = 0x64;
+  RTC_WriteAccess(false);
 }
 
-void RTC_SetWakeUp(uint16_t nInterval)
+void RTC_SetWakeUp(uint16_t nInterval_s)
 {
-  RTC->WPR = 0xCA; /* (7) */
-  RTC->WPR = 0x53; /* (7) */
-  RTC->CR &=~ RTC_CR_WUTE; /* (8) */
-  while((RTC->ISR & RTC_ISR_WUTWF) != RTC_ISR_WUTWF) /* (9) */
+  RTC_WriteAccess(true);
+  RTC->CR &=~ RTC_CR_WUTE; // enable wakeup timer configuration
+  while((RTC->ISR & RTC_ISR_WUTWF) != RTC_ISR_WUTWF) // wait for enabled
   {
     /* add time out here for a robust application */
   }
 
-  RTC->WUTR = nInterval - 1;  // WUTR je delicka, takže 0 znamena 1 impulz
-  RTC->CR = RTC_CR_WUCKSEL_2 | RTC_CR_WUTE | RTC_CR_WUTIE; /* (11) */
-  RTC->WPR = 0xFE; /* (12) */
-  RTC->WPR = 0x64; /* (12) */
+  RTC->WUTR = nInterval_s - 1;  // WUTR je delicka, takže 0 znamena 1 impulz
+  RTC->CR = RTC_CR_WUCKSEL_2 | RTC_CR_WUTE | RTC_CR_WUTIE; // clock source | enable wakeup timer | enable INT
+
+  // Disable write access
+  RTC_WriteAccess(false);
 
   EXTI->IMR |= EXTI_IMR_IM20;       // unmask line 20
   EXTI->RTSR |= EXTI_RTSR_TR20;     // Rising edge for line 20
@@ -86,11 +84,27 @@ void RTC_SetWakeUp(uint16_t nInterval)
   NVIC_EnableIRQ(RTC_IRQn);         // Enable RTC_IRQn
 }
 
+// Enable/disable write access to RTC registers
+void RTC_WriteAccess(bool bEnable)
+{
+  if (bEnable)
+  {
+    // Enable write access
+    RTC->WPR = 0xCA;
+    RTC->WPR = 0x53;
+  }
+  else
+  {
+    // Disable write access
+    RTC->WPR = 0xFE;
+    RTC->WPR = 0x64;
+  }
+}
+
 void RTC_Set(rtc_record_time_t *dt, bool bDate, bool bTime)
 {
   // Write access for RTC registers
-  RTC->WPR = 0xCA;
-  RTC->WPR = 0x53;
+  RTC_WriteAccess(true);
   RTC->ISR = RTC_ISR_INIT; // Enable init phase
   while((RTC->ISR & RTC_ISR_INITF)!=RTC_ISR_INITF) // Wait until it is allow to modify RTC register values
   {
@@ -110,8 +124,7 @@ void RTC_Set(rtc_record_time_t *dt, bool bDate, bool bTime)
   RTC->ISR =~ RTC_ISR_INIT; // Disable init phase
 
   // Disable write access for RTC registers
-  RTC->WPR = 0xFE;
-  RTC->WPR = 0x64;
+  RTC_WriteAccess(false);
 
   while (!(RTC->ISR & RTC_ISR_RSF));
 }
