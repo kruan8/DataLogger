@@ -126,13 +126,7 @@ void APP_Measure(void)
   record.time = RTC_GetUnixTimeStamp(&dt);
   record.temperature = temp;
 
-  // save do Flash
-  // Todo: opravdu je treba sektor mazat, kdyz je vymazana cela pamet?
-//  if (g_nSectorPosition == 0)  // zacatek noveho sektoru, tak ho smazat
-//  {
-//    FlashG25_SectorErase(g_nSector);
-//  }
-
+  // zapis do pameti a kontrola obsahu
   FlashG25_PageProgram(g_nSector * G25_SECTOR_SIZE + g_nSectorPosition, (uint8_t*)&record, RECORD_SIZE);
 
   app_record_t record_check;
@@ -273,8 +267,7 @@ void APP_SupplyOnAndWait()
   ADC->CCR |= ADC_CCR_TSEN;       // enable TEMP_INT
 
   uint32_t start = RTC_GetTicks();
-  while ((RTC_GetTicks() - start) < 4);   // wait min 4ms
-//  SetMSI(msi_2Mhz);
+  while ((RTC_GetTicks() - start) < 10);   // wait min 10ms for flash memory wakeup
 }
 
 void APP_SupplyOff()

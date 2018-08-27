@@ -59,7 +59,7 @@
  *        Odstranen vypis internal teplomeru.
  *        Pri inicializaci kontrola velikosti napìtí baterie.
  *
- * Todo: 0.5 - Namalovat si graf, co se ted deje po probuzeni! Stanby se probouzi resetem a je smazana RAM!
+ * Todo: 0.5 - Namalovat si graf, co se ted deje po probuzeni! Standby se probouzi resetem a je smazana RAM!
  *        Pro implemetnaci watchdogu se musi WD nastavit na nejdelsi dobu (32s), WD bude provadet reset.
  *        Vypnout preruseni RTC wakeup a po resetu provedenem pomoci WD, se zkontroluje, jestli je nastaven RTC_ISR->WUTF,
  *        coz signalizuje, ze vyprsel interval pro mereni. Pro mereni neni potreba inicializovat USART a asi ani RTC!
@@ -70,6 +70,8 @@
 
 int main(void)
 {
+  uint32_t nResetFlag = RCC->CSR;     // get reset flag
+  RCC->CSR |= RCC_CSR_RMVF;           // clear reset flag
 
   APP_Init();
 

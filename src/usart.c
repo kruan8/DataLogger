@@ -14,6 +14,9 @@
 #include "FlashG25.h"
 #include "adc.h"
 
+#include "stm32l0xx_ll_bus.h"
+#include "stm32l0xx_ll_gpio.h"
+
 #define BUFFER_SIZE  128
 
 static uint8_t g_BufferIn[BUFFER_SIZE];
@@ -31,15 +34,19 @@ static const uint8_t T_NewLine[] = "\r\n";
 void USART_Init(void)
 {
   /* Enable the peripheral clock of GPIOA */
+//  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
   RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
 
   /* GPIO configuration for USART2 signals */
   /* (1) Select AF mode (10) on PA9 and PA10 */
   /* (2) AF4 for USART2 signals */
-  GPIOA->MODER = (GPIOA->MODER & ~(GPIO_MODER_MODE9|GPIO_MODER_MODE10))\
-                | (GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1); /* (1) */
-  GPIOA->AFR[1] = (GPIOA->AFR[1] &~ (0x00000FF0))\
-                 | (4 << (1 * 4)) | (4 << (2 * 4)); /* (2) */
+//  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_9, LL_GPIO_MODE_ALTERNATE);
+//  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_10, LL_GPIO_MODE_ALTERNATE);
+//  LL_GPIO_SetAFPin_8_15(GPIOA, LL_GPIO_PIN_9, LL_GPIO_AF_4);
+//  LL_GPIO_SetAFPin_8_15(GPIOA, LL_GPIO_PIN_10, LL_GPIO_AF_4);
+
+  GPIOA->MODER = (GPIOA->MODER & ~(GPIO_MODER_MODE9|GPIO_MODER_MODE10)) | (GPIO_MODER_MODE9_1 | GPIO_MODER_MODE10_1); /* (1) */
+  GPIOA->AFR[1] = (GPIOA->AFR[1] &~ (0x00000FF0))  | (4 << (1 * 4)) | (4 << (2 * 4)); /* (2) */
 
   /* Enable the peripheral clock USART2 */
   RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
