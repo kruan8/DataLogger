@@ -2,7 +2,7 @@
  * usart.c
  *
  *  Created on: 2. 11. 2016
- *      Author: priesolv
+ *  Author: Priesol Vladimir
  */
 
 #include "usart.h"
@@ -227,11 +227,10 @@ void USART_EraseMemory()
     {
       FlashG25_SectorErase(i);
       USART_Putc('x');
-//      uint32_t start = RTC_GetTicks();
-//      while ((RTC_GetTicks() - start) < 100);
     }
 
     APP_LogError(err_ok);
+    App_ClearBackup();
 
     USART_PrintNewLine();
     USART_PrintLine((uint8_t*)"Memory & error are erased, reset performed");

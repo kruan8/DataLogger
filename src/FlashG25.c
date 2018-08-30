@@ -43,8 +43,8 @@ static const FlashG25Identify_t g_G25types[] = {
     { 0x1F8401,  2048,  128 },        // AT25SF041 4Mbit
 };
 
-uint32_t g_nPages = 0;        // memory page count
-uint32_t g_nSectors = 0;      // memory sector count
+static uint32_t g_nPages = 0;        // memory page count
+static uint32_t g_nSectors = 0;      // memory sector count
 
 bool FlashG25_Init(void)
 {

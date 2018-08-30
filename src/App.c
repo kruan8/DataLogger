@@ -2,7 +2,7 @@
  * App.c
  *
  *  Created on: 9. 11. 2016
- *      Author: vladicek
+ *  Author: Priesol Vladimir
  */
 
 
@@ -35,28 +35,80 @@
 
 #define MIN_SUPPLY_VOLTAGE_MV   2600  //2,6V
 
+#define EEPROM_TEMP_OFFSET    0                                      // int32
+#define EEPROM_TEMP_ADC      (EEPROM_TEMP_OFFSET + sizeof(int32_t))      // uint32
+#define EEPROM_INTERVAL_S    (EEPROM_TEMP_ADC + sizeof(int32_t))    // uint32
+#define EEPROM_ERROR         (EEPROM_INTERVAL_S + sizeof(int32_t))    // uint32
 
-static uint16_t g_nWakeUpInterval_s = WAKEUP_INTERVAL_S;
+#define BACKUP_ADDR          0
+
+typedef struct
+{
+  uint16_t nSector;
+  uint16_t nSectorPos;
+  uint32_t nCrc;
+  // max 5 32bit. hodnot
+}backup_t;
+
+static uint16_t    g_nWakeUpInterval_s = WAKEUP_INTERVAL_S;
 
 //static const uint8_t EmptyRecord[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 static const app_record_t EmptyRecord = { 0xFFFFFFFF, 0xFFFF};
 
-static uint32_t g_nSector;
-static uint16_t g_nSectorPosition;
+static uint16_t    g_nSector;
+static uint16_t    g_nSectorPosition;
 
 static app_error_t g_eError = err_ok;
+static uint16_t    g_nVoltage;
+static bool        g_bWakedFromStandby;
+static backup_t    g_backup;
+
 
 void APP_Init(void)
 {
+  // identifikace navratu ze standby modu
+  if (RCC->CSR & RCC_CSR_PINRSTF)  // test na pin reset
+  {
+    RCC->CSR |= RCC_CSR_RMVF;
+    g_bWakedFromStandby = false;
+  }
+  else
+  {
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN; // Enable PWR clock
+    if (PWR->CSR & PWR_CSR_SBF) // zarizeni bylo ve Standby modu
+    {
+      PWR->CR |= PWR_CR_CSBF;  // clear SBF flag
+
+      // WUF je pri standby vymazan resetem, takze neni nastaven
+  //    if (PWR->CSR & PWR_CSR_WUF)  // je nastaven WakeUp flag?
+  //    {
+  //      bWUF = true;
+  //      PWR->CR |= PWR_CR_CWUF;  // clear WUF flag
+  //
+  //
+  //    }
+
+      g_bWakedFromStandby = true;
+    }
+  }
+
+  g_eError = Eeprom_ReadUint32(EEPROM_ERROR);
+
+  // pri probuzeni s chybou opet usiname
+  if (g_bWakedFromStandby && g_eError != err_ok)
+  {
+    return;
+  }
+
   // Set clock & power
   SetMSI(msi_1Mhz);
   SystemCoreClockUpdate();
   SysTick_Config(SystemCoreClock / 1000);
   SetVoltageRange(range3);
 
+  APP_SupplyOnAndWait(); // open supply and wait for flash memory wakewup
   Adc_Init();
   RTC_Init();
-  USART_Init();
 
   // nacteme konstanty z EEPROM
   Adc_SetTempOffset(Eeprom_ReadUint32(EEPROM_TEMP_OFFSET));
@@ -68,55 +120,55 @@ void APP_Init(void)
     g_nWakeUpInterval_s = nInterval;
   }
 
-  g_eError = Eeprom_ReadUint32(EEPROM_ERROR);
-
   // kontrola velikosti napajeciho napeti
-  uint16_t nVoltage = Adc_MeasureRefInt_mV();
-  if (nVoltage < MIN_SUPPLY_VOLTAGE_MV)
+  g_nVoltage = Adc_MeasureRefInt_mV();
+  if (g_nVoltage < MIN_SUPPLY_VOLTAGE_MV)
   {
     APP_LogError(err_supply);
+    return;
   }
+//
+//
+//
+//
+//  // ---------------------------------------------
+//    USART_Init();
+//    USART_Putc('>');
+//    USART_PrintLine((uint8_t*)"Wakeup SBF");
+//    USART_WaitForTC();
+//  // ----------------------------------------------
 
-  APP_SupplyOnAndWait();  // set SUPPLY pin for output
-
-  uint32_t nFreeRecords = 0;
-  if (FlashG25_Init())
+  // -------------------------------------------------------
+  if (!FlashG25_Init())
   {
-    nFreeRecords = APP_FindFlashPosition();
-  }
-  else
-  {
-	  APP_LogError(err_init_flash_error);
+    APP_LogError(err_init_flash_error);
+    return;
   }
 
-  USART_PrintHeader(APP_GetRecords(), nFreeRecords, nVoltage, g_eError);
-  USART_Putc('>');
-  RTC_SetUsartTimer(15000);     // waiting for usart input
+  if (g_bWakedFromStandby)
+  {
+    if (!App_LoadBackup())
+    {
+      APP_FindFlashPosition();
+      g_backup.nSector = g_nSector;
+      g_backup.nSectorPos = g_nSectorPosition;
+    }
+
+    g_nSector = g_backup.nSector;
+    g_nSectorPosition = g_backup.nSectorPos;
+
+    APP_Measure();
+
+    g_backup.nSector = g_nSector;
+    g_backup.nSectorPos = g_nSectorPosition;
+    App_SaveBackup();
+  }
+
 }
 
 void APP_Measure(void)
 {
-  if (g_eError)
-  {
-    return;
-  }
-
-  APP_SupplyOnAndWait();
-
   int16_t temp = Adc_GetTemperature(true);
-
-#ifdef DEBUG
-  // int16_t tempInt = Adc_MeasureTemperatureInternal(Adc_MeasureRefInt_mV());
-
-  uint8_t text[35];
-  snprintf((char*)text, sizeof(text), "VDDA:%d(mV)  TEMP:", Adc_MeasureRefInt_mV());
-  USART_Print(text);
-  USART_PrintTemperature(temp);
-//  USART_Print((uint8_t*) " / ");
-//  USART_PrintTemperature(tempInt);
-  USART_PrintNewLine();
-  USART_WaitForTC();
-#endif
 
   // prepare record
   app_record_t record;
@@ -147,13 +199,46 @@ void APP_Measure(void)
     }
   }
 
-//  FlashG25_SetDeepPower();
+}
+
+void APP_UsartExec(void)
+{
+  if (!g_bWakedFromStandby)
+  {
+    USART_Init();
+    APP_FindFlashPosition();
+    USART_PrintHeader(APP_GetRecords(), APP_GetFreeRecords(), g_nVoltage, g_eError);
+    USART_Putc('>');
+    RTC_SetUsartTimer(15000);     // waiting for usart input
+
+    while (RTC_GetUsartTimer())
+    {
+      USART_ProcessCommand();
+    }
+
+    USART_PrintLine((uint8_t*)"Exit to measure mode");
+    USART_WaitForTC();
+#ifndef DEBUG
+    USART_DeInit();
+#endif
+
+
+  }
+
   APP_SupplyOff();
+  RTC_SetWakeUp(APP_GetInterval_s());
+  APP_SetLPmode(true);
 }
 
 uint32_t APP_GetRecords()
 {
   return g_nSector * RECORDS_PER_SECTOR + g_nSectorPosition / RECORD_SIZE;
+}
+
+uint32_t APP_GetFreeRecords()
+{
+  uint32_t nFreeRecords = ((FlashG25_GetSectors() - g_nSector) * G25_SECTOR_SIZE - g_nSectorPosition) / RECORD_SIZE;
+  return nFreeRecords;
 }
 
 uint32_t APP_FindFlashPosition()
@@ -162,11 +247,10 @@ uint32_t APP_FindFlashPosition()
 
   // find last used sector;
   bool bFullMemory = true;
-  uint32_t nSectors = FlashG25_GetSectors();
-  for (g_nSector = 0; g_nSector < nSectors; g_nSector++)
+  for (g_nSector = 0; g_nSector < FlashG25_GetSectors(); g_nSector++)
   {
-    FlashG25_ReadData(G25_SECTOR_SIZE * g_nSector, buff, RECORD_SIZE);
-    if (memcmp(buff, &EmptyRecord, sizeof (EmptyRecord)) == 0)
+    FlashG25_ReadData(G25_SECTOR_SIZE * g_nSector, buff, RECORD_SIZE); // check only first record position
+    if (memcmp(buff, &EmptyRecord, sizeof (EmptyRecord)) == 0)   // free position founded
     {
       bFullMemory = false;
       break;
@@ -202,8 +286,7 @@ uint32_t APP_FindFlashPosition()
     }
   }
 
-  uint32_t nFreeRecords = ((nSectors - g_nSector) * G25_SECTOR_SIZE - g_nSectorPosition) / RECORD_SIZE;
-  return nFreeRecords;
+  return APP_GetFreeRecords();
 }
 
 void APP_PrintRecords()
@@ -262,7 +345,6 @@ void APP_SupplyOnAndWait()
 
   SUPPLY_ENABLE;
 
-//  SetMSI(msi_65kHz);
   ADC->CCR |= ADC_CCR_VREFEN;     // enable VREFINT
   ADC->CCR |= ADC_CCR_TSEN;       // enable TEMP_INT
 
@@ -286,11 +368,18 @@ void APP_SupplyOff()
   GPIOA->MODER = (GPIOA->MODER & (~GPIO_MODER_MODE4)) | GPIO_MODER_MODE4_0 | GPIO_MODER_MODE4_1;
 }
 
-void APP_StopMode(void)
+
+// STOP mode continues after 'wfi' instruction
+// STANDBY mode continues from RESET vector
+void APP_SetLPmode(bool bStandby)
 {
   // Adc_Disable();
   RCC->APB1ENR |= RCC_APB1ENR_PWREN; // Enable PWR clock
   PWR->CR |= PWR_CR_ULP;
+  if (bStandby)
+  {
+    PWR->CR |= PWR_CR_PDDS;  // rozlisuje mody STANDBY | STOP
+  }
 
   SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
   PWR->CR |= PWR_CR_CWUF;  // Clear Wakeup flag
@@ -338,4 +427,63 @@ void APP_LogError(app_error_t e_error)
   Eeprom_UnlockPELOCK();
   Eeprom_WriteUint32(EEPROM_ERROR, e_error);
   Eeprom_LockNVM();
+}
+
+bool App_LoadBackup()
+{
+  uint8_t nSize = sizeof(backup_t) / sizeof(uint32_t);
+  uint32_t *pData = (uint32_t*)&g_backup;
+  uint32_t nIndex = BACKUP_ADDR;
+
+  while (nSize--)
+  {
+    *pData = RTC_ReadBackup(nIndex++);
+    pData++;
+  }
+
+  nSize = sizeof (g_backup) - sizeof (g_backup.nCrc);
+  uint32_t crc = App_CountCRC32HW((uint8_t*)&g_backup, nSize);
+  if (crc != g_backup.nCrc)
+  {
+    return false;
+  }
+
+  return true;
+}
+
+void App_SaveBackup()
+{
+  uint8_t nSize = sizeof (g_backup) - sizeof (g_backup.nCrc);
+  g_backup.nCrc = App_CountCRC32HW((uint8_t*)&g_backup, nSize);
+
+  nSize = sizeof(backup_t) / sizeof(uint32_t);
+  uint32_t *pData = (uint32_t*)&g_backup;
+  uint32_t nIndex = BACKUP_ADDR;
+  while (nSize--)
+  {
+    RTC_WriteBackup(nIndex++, *pData);
+    pData++;
+  }
+
+}
+
+void App_ClearBackup()
+{
+  g_backup.nSector = 0;
+  g_backup.nSector = 0;
+  App_SaveBackup();
+}
+
+uint32_t App_CountCRC32HW(uint8_t* pBuffer, uint16_t nSize)
+{
+  RCC->AHBENR |= RCC_AHBENR_CRCEN;
+  CRC->CR = CRC_CR_RESET;
+  for (uint16_t a = 0; a < nSize; a++)
+  {
+    CRC->DR = pBuffer[a];
+  }
+
+  uint32_t crc = (uint32_t) (CRC->DR);
+  RCC->AHBENR &= ~RCC_AHBENR_CRCEN;
+  return crc;
 }

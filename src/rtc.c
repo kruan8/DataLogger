@@ -2,7 +2,7 @@
  * rtc.c
  *
  *  Created on: 7. 11. 2016
- *      Author: priesolv
+ *  Author: Priesol Vladimir
  */
 
 #include "rtc.h"
@@ -25,7 +25,7 @@
 #define RTC_CHARISNUM(x)                ((x) >= '0' && (x) <= '9')
 
 /* Days in a month */
-const uint8_t TM_RTC_Months[2][12] = {
+static const uint8_t TM_RTC_Months[2][12] = {
   {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}, /* Not leap year */
   {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}  /* Leap year */
 };
@@ -44,7 +44,7 @@ void RTC_Init(void)
   }
 
   RCC->CSR = (RCC->CSR & ~RCC_CSR_RTCSEL) | RCC_CSR_RTCEN | RCC_CSR_RTCSEL_LSE; // LSE for RTC clock
-  RCC->APB1ENR &=~ RCC_APB1ENR_PWREN; // Disable PWR clock
+//  RCC->APB1ENR &=~ RCC_APB1ENR_PWREN; // Disable PWR clock
 
   // Write access for RTC registers
   RTC_WriteAccess(true);
@@ -89,6 +89,8 @@ void RTC_WriteAccess(bool bEnable)
 {
   if (bEnable)
   {
+    // Enable write in RTC domain control register
+    PWR->CR |= PWR_CR_DBP;
     // Enable write access
     RTC->WPR = 0xCA;
     RTC->WPR = 0x53;
@@ -98,6 +100,8 @@ void RTC_WriteAccess(bool bEnable)
     // Disable write access
     RTC->WPR = 0xFE;
     RTC->WPR = 0x64;
+
+    PWR->CR &= ~PWR_CR_DBP;
   }
 }
 
@@ -141,6 +145,30 @@ void RTC_Get(rtc_record_time_t *dt)
   dt->year = (uint8_t)(RTC_BCD2BIN((value >> 16) & 0xFF));
   dt->month = (uint8_t)(RTC_BCD2BIN((value >> 8) & 0x1F));
   dt->day = (uint8_t)(RTC_BCD2BIN(value & 0x3F));
+}
+
+void RTC_WriteBackup(uint32_t nBkpReg, uint32_t nData)
+{
+  if (nBkpReg < RTC_BKP_NUMBER)
+  {
+    RTC_WriteAccess(true);
+
+    __IO uint32_t addr = ((uint32_t)&RTC->BKP0R) + (nBkpReg << 2);
+    *(__IO uint32_t *)addr = nData;
+
+    RTC_WriteAccess(false);
+  }
+}
+
+uint32_t RTC_ReadBackup(uint32_t nBkpReg)
+{
+  if (nBkpReg < RTC_BKP_NUMBER)
+  {
+    __IO uint32_t addr = ((uint32_t)&RTC->BKP0R) + (nBkpReg << 2);
+    return *(__IO uint32_t *)addr;
+  }
+
+  return 0;
 }
 
 void RTC_PrintDT(uint8_t *pBuffer, uint8_t length)

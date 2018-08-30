@@ -2,20 +2,16 @@
  * main.c
  *
  *  Created on: 10. 8. 2016
- *      Author: priesolv
+ *  Author: Priesol Vladimir
  */
 
 #include "stm32l0xx.h"
-#include <stdio.h>
-#include "clock.h"
-#include "usart.h"
-
-#include "adc.h"
-#include "FlashG25.h"
 #include "rtc.h"
 #include "App.h"
-
-#include "stm32l0xx_ll_gpio.h"
+#include "usart.h"
+#include "clock.h"
+//
+//#include "stm32l0xx_ll_gpio.h"
 
 /*
  * MCU bezi z MSI oscilatoru a pri freq 2,1 Mhz ma spotrebu cca 440 uA.
@@ -70,31 +66,14 @@
 
 int main(void)
 {
-  uint32_t nResetFlag = RCC->CSR;     // get reset flag
-  RCC->CSR |= RCC_CSR_RMVF;           // clear reset flag
 
   APP_Init();
 
   // RTC_Test();
 
-  while (RTC_GetUsartTimer())
-  {
-    USART_ProcessCommand();
-  }
 
-  USART_PrintLine((uint8_t*)"Exit to measure mode");
-  USART_WaitForTC();
+  APP_UsartExec();
 
-#ifndef DEBUG
-  USART_DeInit();
-#endif
-
-  RTC_SetWakeUp(APP_GetInterval_s());
-  while (1)
-  {
-    APP_Measure();
-    APP_StopMode();
-  }
 }
 
 

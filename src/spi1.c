@@ -2,7 +2,7 @@
  * spi1.c
  *
  *  Created on: 7. 11. 2016
- *      Author: priesolv
+ *  Author: Priesol Vladimir
  */
 
 #include "spi1.h"

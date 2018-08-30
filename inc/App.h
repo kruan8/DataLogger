@@ -11,10 +11,6 @@
 #include "stm32l0xx.h"
 #include <stdbool.h>
 
-#define EEPROM_TEMP_OFFSET    0                                      // int32
-#define EEPROM_TEMP_ADC      (EEPROM_TEMP_OFFSET + sizeof(int32_t))      // uint32
-#define EEPROM_INTERVAL_S    (EEPROM_TEMP_ADC + sizeof(int32_t))    // uint32
-#define EEPROM_ERROR         (EEPROM_INTERVAL_S + sizeof(int32_t))    // uint32
 
 typedef enum
 {
@@ -33,15 +29,22 @@ typedef struct
 
 void APP_Init(void);
 void APP_Measure(void);
+void APP_UsartExec(void);
 uint32_t APP_GetRecords();
 uint32_t APP_FindFlashPosition();
+uint32_t APP_GetFreeRecords();
 void APP_PrintRecords();
 void APP_SupplyOnAndWait();
 void APP_SupplyOff();
-void APP_StopMode(void);
+void APP_SetLPmode(bool bStandby);
 void APP_SaveTempOffset(int16_t nOffset);
 void APP_SaveInterval(uint32_t nInterval);
 uint32_t APP_GetInterval_s(void);
 void APP_LogError(app_error_t e_error);
+
+bool App_LoadBackup();
+void App_SaveBackup();
+void App_ClearBackup();
+uint32_t App_CountCRC32HW(uint8_t* buffer, uint16_t size);
 
 #endif /* APP_H_ */

@@ -55,6 +55,9 @@ uint32_t RTC_GetTicks();
 uint32_t RTC_GetUsartTimer();
 void RTC_SetUsartTimer(uint32_t nInterval_ms);
 
+void RTC_WriteBackup(uint32_t nBkpReg, uint32_t nData);
+uint32_t RTC_ReadBackup(uint32_t nBkpReg);
+
 int32_t RTC_GetUnixTimeStamp(rtc_record_time_t* data);
 void RTC_GetDateTimeFromUnix(rtc_record_time_t* data, uint32_t unix);
 

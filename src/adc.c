@@ -2,7 +2,7 @@
  * adc.c
  *
  *  Created on: 7. 11. 2016
- *      Author: priesolv
+ *  Author: Priesol Vladimir
  */
 
 #include "adc.h"
