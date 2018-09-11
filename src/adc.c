@@ -64,6 +64,7 @@ void Adc_Init(void)
   }
 
   ADC->CCR |= ADC_CCR_VREFEN;     // enable VREFINT
+  ADC->CCR |= ADC_CCR_TSEN;       // enable TEMP_INT
 
   ADC1->ISR |= ADC_ISR_EOCAL; /* (5) */
 

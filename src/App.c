@@ -66,6 +66,14 @@ static backup_t    g_backup;
 
 void APP_Init(void)
 {
+  RCC->APB1ENR |= RCC_APB1ENR_PWREN; // Enable PWR clock
+
+  // Set clock & power
+  SetMSI(msi_1Mhz);
+  SystemCoreClockUpdate();
+  SysTick_Config(SystemCoreClock / 1000);
+  SetVoltageRange(range3);
+
   // identifikace navratu ze standby modu
   if (RCC->CSR & RCC_CSR_PINRSTF)  // test na pin reset
   {
@@ -74,7 +82,6 @@ void APP_Init(void)
   }
   else
   {
-    RCC->APB1ENR |= RCC_APB1ENR_PWREN; // Enable PWR clock
     if (PWR->CSR & PWR_CSR_SBF) // zarizeni bylo ve Standby modu
     {
       PWR->CR |= PWR_CR_CSBF;  // clear SBF flag
@@ -95,20 +102,16 @@ void APP_Init(void)
   g_eError = Eeprom_ReadUint32(EEPROM_ERROR);
 
   // pri probuzeni s chybou opet usiname
+  // Todo: a co treba zrusit probouzeni?
   if (g_bWakedFromStandby && g_eError != err_ok)
   {
     return;
   }
 
-  // Set clock & power
-  SetMSI(msi_1Mhz);
-  SystemCoreClockUpdate();
-  SysTick_Config(SystemCoreClock / 1000);
-  SetVoltageRange(range3);
-
-  APP_SupplyOnAndWait(); // open supply and wait for flash memory wakewup
   Adc_Init();
   RTC_Init();
+  APP_SupplyOnAndWait(); // open supply and wait for flash memory wakewup
+
 
   // nacteme konstanty z EEPROM
   Adc_SetTempOffset(Eeprom_ReadUint32(EEPROM_TEMP_OFFSET));
@@ -145,9 +148,10 @@ void APP_Init(void)
     return;
   }
 
+  // mereni teploty a ulozeni do flash
   if (g_bWakedFromStandby)
   {
-    if (!App_LoadBackup())
+    if (!App_LoadBackup())      // natazeni pozice FLASH
     {
       APP_FindFlashPosition();
       g_backup.nSector = g_nSector;
@@ -221,8 +225,6 @@ void APP_UsartExec(void)
 #ifndef DEBUG
     USART_DeInit();
 #endif
-
-
   }
 
   APP_SupplyOff();
@@ -332,7 +334,7 @@ void APP_SupplyOnAndWait()
 {
   RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
 
-  // output mode (napajeni MCP9700 + G25D10)
+  // PA2 output mode (spinani tranzistoru pro napajeni MCP9700 + G25D10)
   GPIOA->MODER = (GPIOA->MODER & ~(GPIO_MODER_MODE2)) | GPIO_MODER_MODE2_0;
 
   // vratit do AF (SPI1)
@@ -345,11 +347,8 @@ void APP_SupplyOnAndWait()
 
   SUPPLY_ENABLE;
 
-  ADC->CCR |= ADC_CCR_VREFEN;     // enable VREFINT
-  ADC->CCR |= ADC_CCR_TSEN;       // enable TEMP_INT
-
   uint32_t start = RTC_GetTicks();
-  while ((RTC_GetTicks() - start) < 10);   // wait min 10ms for flash memory wakeup
+  while ((RTC_GetTicks() - start) < 9);   // wait min 10ms for flash memory wakeup
 }
 
 void APP_SupplyOff()

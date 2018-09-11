@@ -235,7 +235,6 @@ void USART_EraseMemory()
     USART_PrintNewLine();
     USART_PrintLine((uint8_t*)"Memory & error are erased, reset performed");
 
-    // Todo: vymazana chyba, pro novou kontrolu chyb by asi bylo vhodne provest reset
     USART_WaitForTC();
     NVIC_SystemReset();
 //    g_nFreeRecords = APP_FindFlashPosition();

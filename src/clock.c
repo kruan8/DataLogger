@@ -44,5 +44,4 @@ void SetVoltageRange(range_e eRange)
   PWR->CR &= ~PWR_CR_VOS;           // reset VOS bits
   PWR->CR |= eRange << 11;          // set voltage range
   while (PWR->CSR & PWR_CSR_VOSF);  // wait for regulatro is ready
-  RCC->APB1ENR &= ~RCC_APB1ENR_PWREN; // Disable PWR clock
 }
