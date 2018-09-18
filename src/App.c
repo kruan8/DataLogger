@@ -369,7 +369,7 @@ void APP_SupplyOff()
 
 
 // STOP mode continues after 'wfi' instruction
-// STANDBY mode continues from RESET vector
+// STANDBY mode continues from RESET vector and RAM is erased
 void APP_SetLPmode(bool bStandby)
 {
   // Adc_Disable();
