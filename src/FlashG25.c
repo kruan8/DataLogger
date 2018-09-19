@@ -38,13 +38,14 @@
 
 static const FlashG25Identify_t g_G25types[] = {
     // ID      | pages | sectors
-    { 0xC84011,   512,   32 },        // G25D10 1Mbit
-    { 0xC84013,  2048,  128 },        // G25Q41 4Mbit
-    { 0x1F8401,  2048,  128 },        // AT25SF041 4Mbit
+    { 0xC84011,   512,   32, "G25D10/1Mbit" },        // G25D10 1Mbit
+    { 0xC84013,  2048,  128, "G25Q41/4Mbit" },        // G25Q41 4Mbit
+    { 0x1F8401,  2048,  128, "AT25SF041/4Mbit" },        // AT25SF041 4Mbit
 };
 
 static uint32_t g_nPages = 0;        // memory page count
 static uint32_t g_nSectors = 0;      // memory sector count
+static const char* g_pTypeString;       // memory description string
 
 bool FlashG25_Init(void)
 {
@@ -71,6 +72,7 @@ bool FlashG25_Init(void)
     {
       g_nPages = g_G25types[i].pages;
       g_nSectors = g_G25types[i].sectors;
+      g_pTypeString = g_G25types[i].strType;
       break;
     }
   }
@@ -178,6 +180,11 @@ uint32_t FlashG25_GetID()
   CS_DISABLE;
 
   return nID;
+}
+
+const char* FlashG25_GetTypeString()
+{
+  return g_pTypeString;
 }
 
 bool FlashG25_IsPresent()

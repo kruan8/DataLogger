@@ -27,7 +27,7 @@ static uint32_t g_nRecords;
 static uint32_t g_nFreeRecords;
 static uint32_t g_nBatVoltage;
 
-static const uint8_t T_Version[] = "---- DATA LOGGER v0.4 ----";
+static const uint8_t T_Version[] = "---- DATA LOGGER v0.5 ----";
 static const uint8_t T_Email[] = "vpriesol@seznam.cz";
 static const uint8_t T_NewLine[] = "\r\n";
 
@@ -143,6 +143,7 @@ void USART_PrintHeader(uint32_t nRecords, uint32_t nFreeRecords, uint32_t nBatVo
   USART_PrintNewLine();
   USART_PrintLine(T_Version);
   USART_PrintLine(T_Email);
+
   USART_PrintNewLine();
 
   USART_PrintStatus();
@@ -190,6 +191,8 @@ void USART_PrintStatus()
   USART_Print((uint8_t*)"Temperature calibration offset: ");
   USART_PrintTemperature(Adc_GetTempOffset());
   USART_PrintLine((uint8_t*)"(C)");
+  USART_Print((uint8_t*)"Memory type: ");
+  USART_PrintLine((uint8_t*)FlashG25_GetTypeString());
 }
 
 void USART_PrintHelp()

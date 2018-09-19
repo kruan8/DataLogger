@@ -35,6 +35,7 @@ typedef struct
   uint32_t identificationID;
   uint32_t pages;
   uint16_t sectors;
+  const char* strType;
 }FlashG25Identify_t;
 
 bool FlashG25_Init(void);
@@ -50,6 +51,7 @@ bool FlashG25_IsPresent();
 void FlashG25_SetDeepPower();
 uint32_t FlashG25_GetSectors();
 uint32_t FlashG25_GetPages();
+const char* FlashG25_GetTypeString();
 void FlashG25_Send24bit(uint32_t nValue);
 
 #endif /* FLASHG25_H_ */

@@ -55,7 +55,7 @@
  *        Odstranen vypis internal teplomeru.
  *        Pri inicializaci kontrola velikosti napìtí baterie.
  *
- * v0.5 - zmenen STOP mod na STANDBY mod. Poud je probuzeno z RTC, neinicializuje se USART.
+ * v0.5 - zmena low power modu STOP na STANDBY. Pokud je probuzeno z RTC, neinicializuje se USART.
  *        Pozice ve flash pameti je ulozeno do backup registru, aby se nemusela prochazet cela pamet.
  *        Odstraneno mereni teploty internim teplomerem.
  *        Spotøeba: beh (bez flash zapisu) 570 uA, standby 0,7 uA
