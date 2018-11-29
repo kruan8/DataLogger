@@ -60,7 +60,9 @@
  *        Odstraneno mereni teploty internim teplomerem.
  *        Spotøeba: beh (bez flash zapisu) 570 uA, standby 0,7 uA
  *
- * Todo:  Pro implementaci watchdogu se musi WD nastavit na nejdelsi dobu (32s), WD bude provadet reset.
+ * v0.6 - zmena rychlosti komunikace na 57600
+ *
+ * Todo:Pro implementaci watchdogu se musi WD nastavit na nejdelsi dobu (32s), WD bude provadet reset.
  *        Vypnout preruseni RTC wakeup a po resetu provedenem pomoci WD, se zkontroluje, jestli je nastaven RTC_ISR->WUTF,
  *        coz signalizuje, ze vyprsel interval pro mereni. Pro mereni neni potreba inicializovat USART a asi ani RTC!
  *

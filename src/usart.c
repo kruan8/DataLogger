@@ -27,7 +27,7 @@ static uint32_t g_nRecords;
 static uint32_t g_nFreeRecords;
 static uint32_t g_nBatVoltage;
 
-static const uint8_t T_Version[] = "---- DATA LOGGER v0.5 ----";
+static const uint8_t T_Version[] = "---- DATA LOGGER v0.6 ----";
 static const uint8_t T_Email[] = "vpriesol@seznam.cz";
 static const uint8_t T_NewLine[] = "\r\n";
 
@@ -51,14 +51,11 @@ void USART_Init(void)
   /* Enable the peripheral clock USART2 */
   RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
 
-  /* Configure USART2 */
-  /* (1) oversampling by 16, 9600 baud */
-  /* (2) 8 data bit, 1 start bit, 1 stop bit, no parity */
-  //  USART2->BRR = 160000 / 96; /* (1) */
+  // baudrate vypocitat ze SystemCoreClock
+  USART2->BRR = (uint8_t)(SystemCoreClock / 57600);
 
-  // vypocitat z taktu SystemCoreClock
-  USART2->BRR = (uint8_t)(SystemCoreClock / 9600);
-  USART2->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE; /* (2) */
+  /* TX&RX enable, USART enable, 8 data bit, 1 start bit, 1 stop bit, no parity*/
+  USART2->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
 
   /* polling idle frame Transmission */
   while((USART2->ISR & USART_ISR_TC) != USART_ISR_TC)
