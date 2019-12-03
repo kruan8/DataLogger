@@ -33,12 +33,12 @@
 #define WAKEUP_INTERVAL_S    (30 * 60)  // 30 minut
 #endif
 
-#define MIN_SUPPLY_VOLTAGE_MV   2600  //2,6V
+#define MIN_SUPPLY_VOLTAGE_MV   2600  // minimalni povolene napajeci napeti 2,6V (flash pamet)
 
-#define EEPROM_TEMP_OFFSET    0                                      // int32
-#define EEPROM_TEMP_ADC      (EEPROM_TEMP_OFFSET + sizeof(int32_t))      // uint32
-#define EEPROM_INTERVAL_S    (EEPROM_TEMP_ADC + sizeof(int32_t))    // uint32
-#define EEPROM_ERROR         (EEPROM_INTERVAL_S + sizeof(int32_t))    // uint32
+#define EEPROM_TEMP_OFFSET    0                                        // offset kalibrace teploty (int32)
+#define EEPROM_TEMP_ADC      (EEPROM_TEMP_OFFSET + sizeof(int32_t))    // (uint32)
+#define EEPROM_INTERVAL_S    (EEPROM_TEMP_ADC + sizeof(int32_t))       // interval probouzeni a mereni (uint32)
+#define EEPROM_ERROR         (EEPROM_INTERVAL_S + sizeof(int32_t))     // ulozena chyba zarizeni (uint32)
 
 #define BACKUP_ADDR          0
 
@@ -420,7 +420,7 @@ uint32_t APP_GetInterval_s(void)
 
 void APP_LogError(app_error_t e_error)
 {
-	g_eError = err_full_memory;
+	g_eError = e_error;
 
 	// ulozit chybu do EEPROM
   Eeprom_UnlockPELOCK();

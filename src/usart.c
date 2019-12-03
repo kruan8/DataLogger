@@ -201,6 +201,7 @@ void USART_PrintHelp()
   USART_PrintLine((uint8_t*)"Set interval (min): 'I mm' (30)");
   USART_PrintLine((uint8_t*)"Temperature list: 'L'");
   USART_PrintLine((uint8_t*)"Erase memory: 'X+X'");
+  USART_PrintLine((uint8_t*)"Erase internal error: 'X+E'");
   USART_PrintLine((uint8_t*)"Temperature calibration: 'CALxxx' (CAL225=22,5)");
   USART_PrintLine((uint8_t*)"Print help: ENTER");
 }
@@ -237,8 +238,16 @@ void USART_EraseMemory()
 
     USART_WaitForTC();
     NVIC_SystemReset();
-//    g_nFreeRecords = APP_FindFlashPosition();
-//    g_nRecords = APP_GetRecords();
+  }
+  else if (g_BufferIn[1] == '+' && g_BufferIn[2] == 'E')
+  {
+    APP_LogError(err_ok);
+    App_ClearBackup();
+    USART_PrintNewLine();
+    USART_PrintLine((uint8_t*)"Internal error is erased, reset performed");
+
+    USART_WaitForTC();
+    NVIC_SystemReset();
   }
 }
 
