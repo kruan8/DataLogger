@@ -6,7 +6,7 @@
  */
 
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <string.h>
 #include "App.h"
 #include "usart.h"
@@ -15,6 +15,13 @@
 #include "FlashG25.h"
 #include "clock.h"
 #include "Eeprom.h"
+
+#include "printf.h"
+
+#include "stm32l0xx_ll_rcc.h"
+#include "stm32l0xx_ll_pwr.h"
+#include "stm32l0xx_ll_bus.h"
+#include "stm32l0xx_ll_crc.h"
 
 #define SUPPLY_PIN              (1 << 2)
 #define SUPPLY_GPIO_PORT        GPIOA
@@ -26,6 +33,9 @@
 #define RECORD_SIZE             (sizeof(app_record_t))   // 5
 #define RECORDS_PER_SECTOR      (4096 / RECORD_SIZE)
 #define FULL_SECTOR             (RECORDS_PER_SECTOR * RECORD_SIZE)
+
+#define APP_SLEEP_INTERVAL_MS           20000
+#define APP_COMMAND_LINE_INTERVAL_MS    60000
 
 #ifdef DEBUG
 #define WAKEUP_INTERVAL_S    10  // 10 seconds
@@ -63,10 +73,11 @@ static uint16_t    g_nVoltage;
 static bool        g_bWakedFromStandby;
 static backup_t    g_backup;
 
+static void _GetRecordAndSave();
 
 void APP_Init(void)
 {
-  RCC->APB1ENR |= RCC_APB1ENR_PWREN; // Enable PWR clock
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
 
   // Set clock & power
   SetMSI(msi_1Mhz);
@@ -75,16 +86,16 @@ void APP_Init(void)
   SetVoltageRange(range3);
 
   // identifikace navratu ze standby modu
-  if (RCC->CSR & RCC_CSR_PINRSTF)  // test na pin reset
+  if (LL_RCC_IsActiveFlag_PINRST())  // test na pin reset
   {
-    RCC->CSR |= RCC_CSR_RMVF;
+    LL_RCC_ClearResetFlags();
     g_bWakedFromStandby = false;
   }
   else
   {
-    if (PWR->CSR & PWR_CSR_SBF) // zarizeni bylo ve Standby modu
+    if (LL_PWR_IsActiveFlag_SB()) // zarizeni bylo ve Standby modu
     {
-      PWR->CR |= PWR_CR_CSBF;  // clear SBF flag
+      LL_PWR_ClearFlag_SB();  // clear SBF flag
 
       // WUF je pri standby vymazan resetem, takze neni nastaven
   //    if (PWR->CSR & PWR_CSR_WUF)  // je nastaven WakeUp flag?
@@ -148,26 +159,31 @@ void APP_Init(void)
     return;
   }
 
-  // mereni teploty a ulozeni do flash
   if (g_bWakedFromStandby)
   {
-    if (!App_LoadBackup())      // natazeni pozice FLASH
-    {
-      APP_FindFlashPosition();
-      g_backup.nSector = g_nSector;
-      g_backup.nSectorPos = g_nSectorPosition;
-    }
-
-    g_nSector = g_backup.nSector;
-    g_nSectorPosition = g_backup.nSectorPos;
-
-    APP_Measure();
-
-    g_backup.nSector = g_nSector;
-    g_backup.nSectorPos = g_nSectorPosition;
-    App_SaveBackup();
+    _GetRecordAndSave();
   }
 
+}
+
+/** mereni teploty a ulozeni do flash */
+void _GetRecordAndSave()
+{
+  if (!App_LoadBackup())      // natazeni pozice FLASH
+  {
+    APP_FindFlashPosition();
+    g_backup.nSector = g_nSector;
+    g_backup.nSectorPos = g_nSectorPosition;
+  }
+
+  g_nSector = g_backup.nSector;
+  g_nSectorPosition = g_backup.nSectorPos;
+
+  APP_Measure();
+
+  g_backup.nSector = g_nSector;
+  g_backup.nSectorPos = g_nSectorPosition;
+  App_SaveBackup();
 }
 
 void APP_Measure(void)
@@ -213,11 +229,14 @@ void APP_UsartExec(void)
     APP_FindFlashPosition();
     USART_PrintHeader(APP_GetRecords(), APP_GetFreeRecords(), g_nVoltage, g_eError);
     USART_Putc('>');
-    RTC_SetUsartTimer(15000);     // waiting for usart input
+    RTC_SetUsartTimer(APP_SLEEP_INTERVAL_MS);     // waiting for usart input
 
     while (RTC_GetUsartTimer())
     {
-      USART_ProcessCommand();
+      if (USART_ProcessCommand())
+      {
+        RTC_SetUsartTimer(APP_COMMAND_LINE_INTERVAL_MS);       // timeout for command line
+      }
     }
 
     USART_PrintLine((uint8_t*)"Exit to measure mode");
@@ -307,7 +326,7 @@ void APP_PrintRecords()
       FlashG25_ReadData(sect * G25_SECTOR_SIZE + pos, (uint8_t*) &record, RECORD_SIZE);
       if (memcmp((uint8_t*) &record, &EmptyRecord, sizeof (EmptyRecord)) == 0)
       {
-        snprintf((char*)text, sizeof(text), "Number of records:%lu", nRecords);
+        snprintf_((char*)text, sizeof(text), "Number of records:%lu", nRecords);
         USART_PrintLine(text);
         return;
       }
@@ -318,7 +337,7 @@ void APP_PrintRecords()
       RTC_GetDateTimeFromUnix(&rtime, record.time);
 //      RTC_ConvertToStruct(record.time, &rtime);
 
-      snprintf((char*)text, sizeof(text), "%d.%d.%d %02d:%02d=",
+      snprintf_((char*)text, sizeof(text), "%d.%d.%d %02d:%02d=",
           rtime.day, rtime.month, rtime.year, rtime.hour, rtime.min);
 
       USART_Print(text);
@@ -327,7 +346,7 @@ void APP_PrintRecords()
     }
   }
 
-  RTC_SetUsartTimer(60000);       // timeout for COM session
+  RTC_SetUsartTimer(APP_COMMAND_LINE_INTERVAL_MS);       // timeout for COM session
 }
 
 void APP_SupplyOnAndWait()
@@ -475,14 +494,16 @@ void App_ClearBackup()
 
 uint32_t App_CountCRC32HW(uint8_t* pBuffer, uint16_t nSize)
 {
-  RCC->AHBENR |= RCC_AHBENR_CRCEN;
-  CRC->CR = CRC_CR_RESET;
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_CRC);
+
+  LL_CRC_ResetCRCCalculationUnit(CRC);
   for (uint16_t a = 0; a < nSize; a++)
   {
     CRC->DR = pBuffer[a];
   }
 
   uint32_t crc = (uint32_t) (CRC->DR);
-  RCC->AHBENR &= ~RCC_AHBENR_CRCEN;
+
+  LL_AHB1_GRP1_DisableClock(LL_AHB1_GRP1_PERIPH_CRC);
   return crc;
 }

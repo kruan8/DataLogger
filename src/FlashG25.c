@@ -38,9 +38,10 @@
 
 static const FlashG25Identify_t g_G25types[] = {
     // ID      | pages | sectors
-    { 0xC84011,   512,   32, "G25D10/1Mbit" },        // G25D10 1Mbit
-    { 0xC84013,  2048,  128, "G25Q41/4Mbit" },        // G25Q41 4Mbit
-    { 0x1F8401,  2048,  128, "AT25SF041/4Mbit" },        // AT25SF041 4Mbit
+    { 0xC84011,   512,   32, "GD25D10/1Mbit" },        // G25D10 1Mbit
+    { 0xC84212,  1024,   64, "GD25VQ21B/2Mbit" },
+    { 0xC84013,  2048,  128, "GD25Q41/4Mbit" },        // G25Q41 4Mbit
+    { 0x1F8401,  2048,  128, "AT25SF041/4Mbit" },     // AT25SF041 4Mbit
 };
 
 static uint32_t g_nPages = 0;        // memory page count

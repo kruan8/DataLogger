@@ -28,6 +28,7 @@ typedef struct
 } __attribute__((packed)) app_record_t;
 
 void APP_Init(void);
+
 void APP_Measure(void);
 void APP_UsartExec(void);
 uint32_t APP_GetRecords();

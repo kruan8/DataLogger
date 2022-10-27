@@ -7,8 +7,10 @@
 
 #include "rtc.h"
 #include <string.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include "adc.h"
+
+#include "printf.h"
 
 #define RTC_TR_RESERVED_MASK    ((uint32_t)0x007F7F7F)
 #define RTC_DR_RESERVED_MASK    ((uint32_t)0x00FFFF3F)
@@ -176,7 +178,7 @@ void RTC_PrintDT(uint8_t *pBuffer, uint8_t length)
   rtc_record_time_t dt;
 
   RTC_Get(&dt);
-  snprintf((char*)pBuffer, length, "%d.%d.%d %02d:%02d:%02d",
+  snprintf_((char*)pBuffer, length, "%d.%d.%d %02d:%02d:%02d",
         dt.day, dt.month, dt.year, dt.hour, dt.min, dt.sec);
 }
 

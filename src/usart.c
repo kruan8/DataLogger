@@ -7,12 +7,14 @@
 
 #include "usart.h"
 #include <stdbool.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "rtc.h"
 #include "FlashG25.h"
 #include "adc.h"
+
+#include "printf.h"
 
 #include "stm32l0xx_ll_bus.h"
 #include "stm32l0xx_ll_gpio.h"
@@ -27,7 +29,7 @@ static uint32_t g_nRecords;
 static uint32_t g_nFreeRecords;
 static uint32_t g_nBatVoltage;
 
-static const uint8_t T_Version[] = "---- DATA LOGGER v0.6 ----";
+static const uint8_t T_Version[] = "---- DATA LOGGER v0.7 ----";
 static const uint8_t T_Email[] = "vpriesol@seznam.cz";
 static const uint8_t T_NewLine[] = "\r\n";
 
@@ -85,11 +87,11 @@ void USART_DeInit(void)
   GPIOA->MODER |= (GPIO_MODER_MODE9_1 | GPIO_MODER_MODE9_0 | GPIO_MODER_MODE10_1 | GPIO_MODER_MODE10_0);
 }
 
-void USART_ProcessCommand()
+bool USART_ProcessCommand()
 {
   if (!g_bCommandReady)
   {
-    return;
+    return false;
   }
 
   strupr((char*)g_BufferIn);
@@ -129,6 +131,8 @@ void USART_ProcessCommand()
   g_bCommandReady = false;
   USART2->CR1 |= USART_CR1_RXNEIE;
   USART_Putc('>');
+
+  return true;
 }
 
 void USART_PrintHeader(uint32_t nRecords, uint32_t nFreeRecords, uint32_t nBatVoltage, app_error_t eErr)
@@ -169,21 +173,21 @@ void USART_PrintStatus()
 {
   uint8_t text[50];
 
-  snprintf((char*)text, sizeof (text), "Date&time: ");
+  snprintf_((char*)text, sizeof (text), "Date&time: ");
   USART_Print(text);
   USART_PrintDateTime();
   uint16_t nVDDA = Adc_MeasureRefInt_mV();
-  snprintf((char*)text, sizeof (text), "Battery:%d,%.2d(V) '(>2,6V)'", nVDDA / 1000, (nVDDA / 10) % 100);
+  snprintf_((char*)text, sizeof (text), "Battery:%d,%.2d(V) '(>2,6V)'", nVDDA / 1000, (nVDDA / 10) % 100);
   USART_PrintLine(text);
   int16_t temp = Adc_CalcTemperature(Adc_CalcValueFromVDDA(Adc_MeasureTemperature(), nVDDA), true);
   USART_Print((uint8_t*)"Temperature:");
   USART_PrintTemperature(temp);
   USART_PrintLine((uint8_t*)"(C)");
   USART_PrintInterval();
-  snprintf((char*)text, sizeof (text), "Number of records:%lu", g_nRecords);
+  snprintf_((char*)text, sizeof (text), "Number of records:%lu", g_nRecords);
   USART_PrintLine(text);
   uint32_t nDays = g_nFreeRecords / (86400 / APP_GetInterval_s());
-  snprintf((char*)text, sizeof (text), "Free memory:%lu records (%lu days)", g_nFreeRecords, nDays);
+  snprintf_((char*)text, sizeof (text), "Free memory:%lu records (%lu days)", g_nFreeRecords, nDays);
   USART_PrintLine(text);
   USART_Print((uint8_t*)"Temperature calibration offset: ");
   USART_PrintTemperature(Adc_GetTempOffset());
@@ -215,7 +219,7 @@ void USART_PrintTemperature(int16_t nTemp)
   }
 
   nTemp = abs (nTemp);
-  snprintf((char*)text, sizeof (text), "%d,%d", nTemp / 10, nTemp % 10);
+  snprintf_((char*)text, sizeof (text), "%d,%d", nTemp / 10, nTemp % 10);
   USART_Print(text);
 }
 
@@ -312,7 +316,7 @@ void USART_SetInterval()
 void USART_PrintInterval()
 {
   uint8_t text[25];
-  snprintf((char*)text, sizeof(text), "Interval=%d min", (uint16_t)(APP_GetInterval_s() / 60));
+  snprintf_((char*)text, sizeof(text), "Interval=%d min", (uint16_t)(APP_GetInterval_s() / 60));
   USART_PrintLine(text);
 }
 
@@ -380,7 +384,6 @@ void USART2_IRQHandler(void)
 
   if (USART2->ISR & USART_ISR_RXNE)
   {
-    RTC_SetUsartTimer(60000);       // timeout for command line
     g_BufferIn[g_BufferInPos] = USART2->RDR;
 
     // End of line!

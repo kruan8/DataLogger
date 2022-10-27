@@ -62,6 +62,10 @@
  *
  * v0.6 - zmena rychlosti komunikace na 57600
  *
+ * v0.7 - upravy pro Gaba:
+ *         - pridana pamet GD25VQ21/2Mb
+ *         - prodlouzen sleep interval na 20s
+ *
  * Todo:Pro implementaci watchdogu se musi WD nastavit na nejdelsi dobu (32s), WD bude provadet reset.
  *        Vypnout preruseni RTC wakeup a po resetu provedenem pomoci WD, se zkontroluje, jestli je nastaven RTC_ISR->WUTF,
  *        coz signalizuje, ze vyprsel interval pro mereni. Pro mereni neni potreba inicializovat USART a asi ani RTC!

@@ -14,7 +14,7 @@
 void USART_Init(void);
 void USART_DeInit(void);
 
-void USART_ProcessCommand();
+bool USART_ProcessCommand();
 void USART_PrintHeader(uint32_t nRecords, uint32_t nFreeRecords, uint32_t nBatVoltage, app_error_t eErr);
 void USART_PrintStatus();
 void USART_PrintHelp();
